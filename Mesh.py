@@ -3,41 +3,54 @@ from MeshLib.OBJMesh import *
 from MeshLib.OFFMesh import *
 from MeshLib.PLYMesh import *
 
-def LoadMesh(fileName, rmReduntVerts = False):
-	'''
-	Load mesh
-	'''
-	suffix = fileName[fileName.rfind('.'):].lower()
-	if suffix == '.obj': return LoadOBJFile(fileName, rmReduntVerts)
-	elif suffix == '.off': return LoadOFFFile(fileName, rmReduntVerts)
-	elif suffix == '.ply': return LoadPLYFile(fileName, rmReduntVerts)
+class Mesh:
 
+	def __init__(self):
+		self.verts = []
+		self.faces = []
+		self.normals = []
+		self.textures = []
 
-def SaveMesh(fileName, verts, faces, normals = [], textures = []):
-	'''
-	Save mesh
-	'''
-	nVert = len(verts)
-	nNorm = len(normals)
-	nTex = len(textures)
-	if nVert != nNorm: print('Warnning: nVert != nNorm')
-	if nVert != nTex: print('Warnning: nVert != nTex')
-	if nNorm != nTex: print('Warnning: nNorm != nTex')
-
-	suffix = fileName[fileName.rfind('.'):].lower()
-	if suffix == '.obj': SaveOBJFile(fileName, verts, faces, normals, textures)
-	elif suffix == '.off': SaveOFFFile(fileName, verts, faces, normals, textures)
-	elif suffix == '.ply': SavePLYFile(fileName, verts, faces, normals, textures)
-
-# test code
+	def LoadMesh(self, fileName, rmReduntVerts = False):
+		'''
+		Load mesh
+		'''
+		self.__init__()
+		suffix = fileName[fileName.rfind('.'):].lower()
+		if suffix == '.obj': 
+			(self.verts, self.faces, self.normals, self.textures) = LoadOBJFile(fileName, rmReduntVerts)
+		elif suffix == '.off': 
+			(self.verts, self.faces, self.normals, self.textures) = LoadOFFFile(fileName, rmReduntVerts)
+		elif suffix == '.ply':
+			(self.verts, self.faces, self.normals, self.textures) = LoadPLYFile(fileName, rmReduntVerts)
+	
+	
+	def SaveMesh(self, fileName):
+		'''
+		Save mesh
+		'''
+		nVert = len(self.verts)
+		nNorm = len(self.normals)
+		nTex = len(self.textures)
+		if nVert != nNorm: print('Warnning: nVert != nNorm')
+		if nVert != nTex: print('Warnning: nVert != nTex')
+		if nNorm != nTex: print('Warnning: nNorm != nTex')
+	
+		suffix = fileName[fileName.rfind('.'):].lower()
+		if suffix == '.obj': SaveOBJFile(fileName, self.verts, self.faces, self.normals, self.textures)
+		elif suffix == '.off': SaveOFFFile(fileName, self.verts, self.faces, self.normals, self.textures)
+		elif suffix == '.ply': SavePLYFile(fileName, self.verts, self.faces, self.normals, self.textures)
+	
+	# test code
 if __name__ == '__main__':
 	# load .obj
-	(verts, faces, normals, textures) = LoadMesh('bunny.unify.obj')
-	print(len(verts), len(faces), len(normals), len(textures))
-	SaveMesh('bunny.unify.out.obj', verts, faces, normals, textures)
+	mesh = Mesh()
+	mesh.LoadMesh('bunny.unify.obj')
+	print(len(mesh.verts), len(mesh.faces), len(mesh.normals), len(mesh.textures))
+	mesh.SaveMesh('bunny.unify.out.obj')
 	# load .off
-	(verts, faces, normals, textures) = LoadMesh('test.off')
-	print(len(verts), len(faces), len(normals), len(textures))
-	SaveMesh('test.out.off', verts, faces, normals, textures)
+	mesh.LoadMesh('test.off')
+	print(len(mesh.verts), len(mesh.faces), len(mesh.normals), len(mesh.textures))
+	mesh.SaveMesh('test.out.off')
 
 
