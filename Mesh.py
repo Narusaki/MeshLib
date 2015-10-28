@@ -2,6 +2,7 @@ from MeshLib.Geometry import *
 import MeshLib.utils.OBJMesh
 import MeshLib.utils.OFFMesh
 import MeshLib.utils.PLYMesh
+import MeshLib.utils.MMesh
 
 # Vertex class
 # fields: 
@@ -67,6 +68,8 @@ class Mesh:
 			(self.verts, self.faces, self.normals, self.textures) = MeshLib.utils.OFFMesh.LoadOFFFile(fileName, rmReduntVerts)
 		elif suffix == '.ply':
 			(self.verts, self.faces, self.normals, self.textures) = MeshLib.utils.PLYMesh.LoadPLYFile(fileName, rmReduntVerts)
+		elif suffix == '.m':
+			(self.verts, self.faces, self.normals, self.textures) = MeshLib.utils.MMesh.LoadMFile(fileName, rmReduntVerts)
 		self.construct()
 	
 	
@@ -86,6 +89,7 @@ class Mesh:
 		if suffix == '.obj': MeshLib.utils.OBJMesh.SaveOBJFile(fileName, self.verts, self.faces, self.normals, self.textures)
 		elif suffix == '.off': MeshLib.utils.OFFMesh.SaveOFFFile(fileName, self.verts, self.faces, self.normals, self.textures)
 		elif suffix == '.ply': MeshLib.utils.PLYMesh.SavePLYFile(fileName, self.verts, self.faces, self.normals, self.textures)
+		elif suffix == '.m': MeshLib.utils.MMesh.SaveMFile(fileName, self.verts, self.faces, self.normals, self.textures)
 	
 	# constructing adjacent structure
 	def construct(self):
