@@ -1,4 +1,5 @@
 from MeshLib.Geometry import *
+import MeshLib.Mesh
 
 def LoadOBJFile(fileName, rmReduntVerts):
 	'''
@@ -22,7 +23,7 @@ def LoadOBJFile(fileName, rmReduntVerts):
 
 			parts = curLine.split(' ')
 			parts = [p for p in parts if p != '']
-			verts.append(Vector3D(float(parts[1]), float(parts[2]), float(parts[3])))
+			verts.append(MeshLib.Mesh.Vertex(Vector3D(float(parts[1]), float(parts[2]), float(parts[3]))))
 		elif curLine[:3] == 'vn ':
 			parts = curLine.split(' ')
 			parts = [p for p in parts if p != '']
@@ -38,7 +39,7 @@ def LoadOBJFile(fileName, rmReduntVerts):
 			vertList = [int(p.split('/')[0])-1 for p in parts]
 			if rmReduntVerts:
 				vertList = [realIndex[v] for v in vertList]
-			faces.append(vertList)
+			faces.append(MeshLib.Mesh.Face(vertList))
 	# select normals and textures -- here assume that the normals and textures have exact the same size as vertices
 	normals_ = []; textures_ = []
 	if rmReduntVerts:
@@ -73,4 +74,3 @@ def SaveOBJFile(fileName, verts, faces, normals, textures):
 			for fi in f: faceLine += ' ' + (str(fi+1) + '/')*2 + str(fi+1)
 		output.write(faceLine + '\n')
 	output.close()
-	pass

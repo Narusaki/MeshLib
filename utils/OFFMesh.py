@@ -1,4 +1,5 @@
 from MeshLib.Geometry import *
+import MeshLib.Mesh
 
 def LoadOFFFile(fileName, rmReduntVerts):
 	'''
@@ -23,7 +24,7 @@ def LoadOFFFile(fileName, rmReduntVerts):
 
 		parts = curLine.split(' ')
 		parts = [p for p in parts if p != '']
-		verts.append(Vector3D(float(parts[0]), float(parts[1]), float(parts[2])))
+		verts.append(MeshLib.Mesh.Vertex(Vector3D(float(parts[0]), float(parts[1]), float(parts[2]))))
 
 	# load faces
 	for i in range(0, meshInfo[1]):
@@ -32,7 +33,7 @@ def LoadOFFFile(fileName, rmReduntVerts):
 		del vertList[0]
 		if rmReduntVerts:
 			vertList = [realIndex[v] for v in vertList]
-		faces.append(vertList)
+		faces.append(MeshLib.Mesh.Face(vertList))
 	return (verts, faces, normals, textures)
 
 def SaveOFFFile(fileName, verts, faces, normals, textures):
