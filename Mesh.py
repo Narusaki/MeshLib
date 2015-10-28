@@ -100,6 +100,7 @@ class Mesh:
 				v0 = f[i]; v1 = f[(i+1)%len(f)]
 				# check if edge has already existed
 				existEdge = -1
+
 				for edgeIndex in self.verts[v0].edges:
 					edge = self.edges[edgeIndex]
 					if edge[0] == v0 and edge[1] == v1 or edge[0] == v1 and edge[1] == v0:
@@ -158,12 +159,17 @@ class Mesh:
 if __name__ == '__main__':
 	# load .obj
 	mesh = Mesh()
-	mesh.LoadMesh('bunny.unify.obj')
-	print(len(mesh.verts), len(mesh.faces), len(mesh.normals), len(mesh.textures))
-	mesh.SaveMesh('bunny.unify.out.obj')
+#	mesh.LoadMesh('bunny.unify.obj')
+#	print(len(mesh.verts), len(mesh.faces), len(mesh.normals), len(mesh.textures))
+#	mesh.SaveMesh('bunny.unify.out.obj')
 	# load .off
-	mesh.LoadMesh('test.off')
+#	mesh.LoadMesh('test.off')
+#	print(len(mesh.verts), len(mesh.faces), len(mesh.normals), len(mesh.textures))
+#	mesh.SaveMesh('test.out.off')
+	# load .m
+	mesh.LoadMesh('fandisk.m')
 	print(len(mesh.verts), len(mesh.faces), len(mesh.normals), len(mesh.textures))
-	mesh.SaveMesh('test.out.off')
+	mesh.SaveMesh('fandisk.out.m')
+	mesh.SaveMesh('fandisk.out.obj')
 
 
