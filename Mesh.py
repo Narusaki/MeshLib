@@ -2,6 +2,7 @@ from MeshLib.Geometry import *
 import MeshLib.utils.OBJMesh
 import MeshLib.utils.OFFMesh
 import MeshLib.utils.PLYMesh
+import MeshLib.utils.MMesh
 
 # Vertex class
 # fields: 
@@ -67,6 +68,8 @@ class Mesh:
 			(self.verts, self.faces, self.normals, self.textures) = MeshLib.utils.OFFMesh.LoadOFFFile(fileName, rmReduntVerts)
 		elif suffix == '.ply':
 			(self.verts, self.faces, self.normals, self.textures) = MeshLib.utils.PLYMesh.LoadPLYFile(fileName, rmReduntVerts)
+		elif suffix == '.m':
+			(self.verts, self.faces, self.normals, self.textures) = MeshLib.utils.MMesh.LoadMFile(fileName, rmReduntVerts)
 		self.construct()
 	
 	
@@ -86,6 +89,7 @@ class Mesh:
 		if suffix == '.obj': MeshLib.utils.OBJMesh.SaveOBJFile(fileName, self.verts, self.faces, self.normals, self.textures)
 		elif suffix == '.off': MeshLib.utils.OFFMesh.SaveOFFFile(fileName, self.verts, self.faces, self.normals, self.textures)
 		elif suffix == '.ply': MeshLib.utils.PLYMesh.SavePLYFile(fileName, self.verts, self.faces, self.normals, self.textures)
+		elif suffix == '.m': MeshLib.utils.MMesh.SaveMFile(fileName, self.verts, self.faces, self.normals, self.textures)
 	
 	# constructing adjacent structure
 	def construct(self):
@@ -96,6 +100,7 @@ class Mesh:
 				v0 = f[i]; v1 = f[(i+1)%len(f)]
 				# check if edge has already existed
 				existEdge = -1
+
 				for edgeIndex in self.verts[v0].edges:
 					edge = self.edges[edgeIndex]
 					if edge[0] == v0 and edge[1] == v1 or edge[0] == v1 and edge[1] == v0:
@@ -154,12 +159,17 @@ class Mesh:
 if __name__ == '__main__':
 	# load .obj
 	mesh = Mesh()
-	mesh.LoadMesh('bunny.unify.obj')
-	print(len(mesh.verts), len(mesh.faces), len(mesh.normals), len(mesh.textures))
-	mesh.SaveMesh('bunny.unify.out.obj')
+#	mesh.LoadMesh('bunny.unify.obj')
+#	print(len(mesh.verts), len(mesh.faces), len(mesh.normals), len(mesh.textures))
+#	mesh.SaveMesh('bunny.unify.out.obj')
 	# load .off
-	mesh.LoadMesh('test.off')
+#	mesh.LoadMesh('test.off')
+#	print(len(mesh.verts), len(mesh.faces), len(mesh.normals), len(mesh.textures))
+#	mesh.SaveMesh('test.out.off')
+	# load .m
+	mesh.LoadMesh('fandisk.m')
 	print(len(mesh.verts), len(mesh.faces), len(mesh.normals), len(mesh.textures))
-	mesh.SaveMesh('test.out.off')
+	mesh.SaveMesh('fandisk.out.m')
+	mesh.SaveMesh('fandisk.out.obj')
 
 
