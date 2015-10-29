@@ -6,3 +6,5 @@ Currently, only 2-manifold triangular meshes (orientable/non-orientable) can be 
 Supported format:
 * .obj
 * .off
+* .m (Hugues Hoppe's format)
+* .ply
