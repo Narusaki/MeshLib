@@ -176,17 +176,21 @@ class Mesh:
 if __name__ == '__main__':
 	# load .obj
 	mesh = Mesh()
-	mesh.LoadMesh('bunny.unify.obj')
+	mesh.LoadMesh('bunny.unify.obj', True)
 	print(len(mesh.verts), len(mesh.faces), len(mesh.normals), len(mesh.textures))
 	mesh.SaveMesh('bunny.unify.out.obj')
 	# load .off
-	mesh.LoadMesh('test.off')
+	mesh.LoadMesh('test.off', True)
 	print(len(mesh.verts), len(mesh.faces), len(mesh.normals), len(mesh.textures))
 	mesh.SaveMesh('test.out.off')
 	# load .m
-	mesh.LoadMesh('fandisk.m')
+	mesh.LoadMesh('fandisk.m', True)
 	print(len(mesh.verts), len(mesh.faces), len(mesh.normals), len(mesh.textures))
 	mesh.SaveMesh('fandisk.out.m')
 	mesh.SaveMesh('fandisk.out.obj')
+	# load .ply
+	mesh.LoadMesh('test.ply', True)
+	print(len(mesh.verts), len(mesh.faces), len(mesh.normals), len(mesh.textures))
+	mesh.SaveMesh('test.out.ply')
 
 
