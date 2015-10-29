@@ -168,9 +168,9 @@ class Mesh:
 		# check for boundary edges and verts
 		for edge in self.edges:
 			if edge.faces[1] == -1: 
-				edges.isBoundary = True
-				verts[edges[0]].isBoundary = True
-				verts[edges[1]].isBoundary = True
+				edge.isBoundary = True
+				self.verts[edge[0]].isBoundary = True
+				self.verts[edge[1]].isBoundary = True
 	
 	# test code
 if __name__ == '__main__':
