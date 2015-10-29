@@ -8,10 +8,12 @@ import MeshLib.utils.MMesh
 # fields: 
 #     pos	---- geometry position
 #     edges	---- adjacent edges
+#     isBoundary---- whether is a boundary vertex
 class Vertex:
 	def __init__(self, point):
 		self.pos = point
 		self.edges = []
+		self.isBoundary = False
 	
 	def __getitem__(self, key):
 		return self.pos[key]
@@ -38,10 +40,14 @@ class Face:
 # fields: 
 #     verts	---- two end points
 #     faces	---- adjacent faces; for boundary edge, there is one adjacent faces that is -1
+#     idxAtVert	---- index at adjacent vertices's edge list
+#     isBoundary---- whether is a boundary edge
 class Edge:
 	def __init__(self, vertPair):
 		self.verts = vertPair[:]
 		self.faces = [-1, -1]
+		self.idxAtVert = [-1, -1]
+		self.isBoundary = False
 
 	def __getitem__(self, key):
 		return self.verts[key]
@@ -70,9 +76,7 @@ class Mesh:
 			(self.verts, self.faces, self.normals, self.textures) = MeshLib.utils.PLYMesh.LoadPLYFile(fileName, rmReduntVerts)
 		elif suffix == '.m':
 			(self.verts, self.faces, self.normals, self.textures) = MeshLib.utils.MMesh.LoadMFile(fileName, rmReduntVerts)
-		self.construct()
-	
-	
+		self.__construct()
 	
 	def SaveMesh(self, fileName):
 		'''
@@ -92,7 +96,7 @@ class Mesh:
 		elif suffix == '.m': MeshLib.utils.MMesh.SaveMFile(fileName, self.verts, self.faces, self.normals, self.textures)
 	
 	# constructing adjacent structure
-	def construct(self):
+	def __construct(self):
 		print('Constructing...')
 		for fIndex in range(0, len(self.faces)):
 			f = self.faces[fIndex]
@@ -122,7 +126,9 @@ class Mesh:
 		# up to now, Face and Edge are all filled
 		# Vertex's edges are filled but not ordered
 		# now re-order Vertex's edges
+		vi = -1
 		for vertex in self.verts:
+			vi += 1
 			# isolated vertex, skip
 			if len(vertex.edges) == 0: continue
 			boundaryStart = -1
@@ -149,11 +155,22 @@ class Mesh:
 				if not found: print('Error occurs while re-order edges around a vertex!'); return
 				# swap
 				tmp = vertex.edges[i+1]; vertex.edges[i+1] = vertex.edges[j]; vertex.edges[j] = tmp
+
 				if coFace == -1:
 					boundaryStart = i+1
 			# if is boundary vertex, shift edges to start from boundary edges
 			if boundaryStart != -1:
 				vertex.edges = vertex.edges[boundaryStart:] + vertex.edges[:boundaryStart]
+			# set idxAtVert list
+			for j in range(0, len(vertex.edges)):
+				idx = 0 if self.edges[vertex.edges[j]][0] == vi else 1
+				self.edges[vertex.edges[j]].idxAtVert[idx] = j
+		# check for boundary edges and verts
+		for edge in self.edges:
+			if edge.faces[1] == -1: 
+				edges.isBoundary = True
+				verts[edges[0]].isBoundary = True
+				verts[edges[1]].isBoundary = True
 	
 	# test code
 if __name__ == '__main__':
