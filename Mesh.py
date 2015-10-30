@@ -65,6 +65,8 @@ class Mesh:
 		self.edges = []
 		self.normals = []
 		self.textures = []
+		self.center = Vector3D()
+		self.scale = 1.0
 
 	def LoadMesh(self, fileName, rmReduntVerts = False):
 		'''
@@ -83,6 +85,18 @@ class Mesh:
 		# construct adjacency
 		self.__construct()
 		self.__calcNormals()
+		# calculate bounding box
+		vMax = Vector3D(-1e30, -1e30, -1e30)
+		vMin = Vector3D(1e30, 1e30, 1e30)
+		for v in self.verts:
+			for i in range(0, 3):
+				vMax[i] = max(vMax[i], v[i])
+				vMin[i] = min(vMin[i], v[i])
+		self.center = (vMax + vMin) / 2.0
+		self.scale = -1.0
+		for i in range(0, 3):
+			self.scale = max(self.scale, vMax[i] - vMin[i])
+		self.scale = 1.0 / self.scale
 	
 	def SaveMesh(self, fileName):
 		'''
