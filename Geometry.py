@@ -61,6 +61,10 @@ class Vector2D:
 		return self.x*self.x + self.y*self.y
 	def length(self):
 		return sqrt(self.length2())
+	def normalize(self):
+		vLen = self.length()
+		self.x /= vLen; self.y /= vLen; 
+		return vLen
 	
 	# index operations
 	def __getitem__(self, key):
@@ -133,6 +137,10 @@ class Vector3D:
 		return self.x*self.x + self.y*self.y + self.z*self.z
 	def length(self):
 		return sqrt(self.length2())
+	def normalize(self):
+		vLen = self.length()
+		self.x /= vLen; self.y /= vLen; self.z /= vLen
+		return vLen
 	
 	# index operations
 	def __getitem__(self, key):

@@ -24,10 +24,14 @@ class Vertex:
 # fields: 
 #     verts	---- vertices
 #     edges	---- adjacent edges
+#     normal	---- face normals
+#     area	---- face area
 class Face:
 	def __init__(self, vertList):
 		self.verts = vertList[:]
 		self.edges = list(range(0, 3))
+		self.normal = Vector3D()
+		self.area = 0.0
 
 	def __getitem__(self, key):
 		return self.verts[key]
@@ -76,7 +80,9 @@ class Mesh:
 			(self.verts, self.faces, self.normals, self.textures) = MeshLib.utils.PLYMesh.LoadPLYFile(fileName, rmReduntVerts)
 		elif suffix == '.m':
 			(self.verts, self.faces, self.normals, self.textures) = MeshLib.utils.MMesh.LoadMFile(fileName, rmReduntVerts)
+		# construct adjacency
 		self.__construct()
+		self.__calcNormals()
 	
 	def SaveMesh(self, fileName):
 		'''
@@ -171,6 +177,39 @@ class Mesh:
 				edge.isBoundary = True
 				self.verts[edge[0]].isBoundary = True
 				self.verts[edge[1]].isBoundary = True
+
+	def __calcNormals(self):
+		# calculate face normals
+		faceNormals = []
+		for f in self.faces:
+			vec0 = self.verts[f[1]].pos - self.verts[f[0]].pos
+			vec1 = self.verts[f[-1]].pos - self.verts[f[0]].pos
+			f.normal = vec0 ^ vec1
+			f.area = f.normal.normalize()
+		# if no vertex normals, calculate them by average each vertex's adjacent faces' normals
+		if len(self.normals) != 0: return
+		for v in self.verts:
+			vNorm = Vector3D()
+			totalArea = 0.0
+			for i in range(0, len(v.edges)):
+				e0 = v.edges[i]
+				e1 = v.edges[(i+1)%len(v.edges)]
+				fi = self.__edgeCoFace(e0, e1)
+				assert fi != -1 or i == len(v.edges) - 1
+				vNorm += self.faces[fi].normal * self.faces[fi].area
+				totalArea += self.faces[fi].area
+			vNorm /= totalArea; vNorm.normalize()
+			self.normals.append(vNorm)
+
+	# find common face of two edges
+	def __edgeCoFace(self, e0, e1):
+		for i in range(0, 2):
+			for j in range(0, 2):
+				if self.edges[e0].faces[i] == self.edges[e1].faces[j]:
+					return self.edges[e0].faces[i]
+		assert False, 'edge %d and %d does not have common face.' % (e0, e1)
+
+
 	
 	# test code
 if __name__ == '__main__':
