@@ -5,6 +5,7 @@ from OpenGL.GLUT import *
 from OpenGL.arrays import vbo
 from OpenGL.GL import shaders
 from MeshLib.Mesh import *
+from MeshLib.GLutils.trackball import *
 from math import pi, tan, sin, cos, sqrt
 import ctypes
 import numpy
@@ -24,6 +25,8 @@ for i in range(1, len(sys.argv)):
 OpenGL.ERROR_CHECKING = False
 
 # some global variables
+mouseButton = None
+mouseState = None
 dkey = False
 showWire = True
 selectedObjId = -1
@@ -35,7 +38,7 @@ faceBufObjs = []
 scaleMatrices = []
 positionId = -1; scaleMatrixId = -1; mvMatrixId = -1; projMatrixId = -1; colorId = -1
 DEPTHEPS = 0.0001
-
+trackball = TrackBall(640, 480)
 
 # vertex and fragment shader content
 vertShaderContent = '''
@@ -136,12 +139,9 @@ def initGL():
 		scaleMatrices.append(numpy.array(constructScaleMatrix(obj), dtype=numpy.float32))
 
 	# shift along minus-z direction for 2 units
-	identity = []
-	for i in range(0, 16):
-		identity.append(1.0 if i%5 == 0 else 0.0)
-	identity[14] = -2.0
-	identity = numpy.array(identity, dtype=numpy.float32)
-	glUniformMatrix4fv(mvMatrixId, 1, False, identity)
+	trackball.mvMatrix[2][3] -= 2.0
+	glUniformMatrix4fv(mvMatrixId, 1, True, trackball.mvMatrix)
+	trackball.mvMatrix[2][3] += 2.0
 	
 	# glEnableClientState(GL_VERTEX_ARRAY)
 
@@ -182,6 +182,7 @@ def reshape(width, height):
 	global projMatrixId
 	glViewport(0, 0, width, height)
 	glUniformMatrix4fv(projMatrixId, 1, False, constructPerspectiveMatrix(45.0, width/height, 0.1, 1000.0))
+	trackball.Resize(width, height)
 
 def keyboard(key, x, y):
 	global selectedObjId
@@ -203,6 +204,23 @@ def keyboardUp(key, x, y):
 	if key == b'd':
 		dkey = False
 
+def mouseClick(button, state, x, y):
+	global mouseButton, mouseState
+	mouseButton = button
+	mouseState = state
+	if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
+		trackball.MousePress(Vector2D(x, y))
+
+def mouseMove(x, y):
+	global mvMatrixId
+	if mouseButton == GLUT_LEFT_BUTTON and mouseState == GLUT_DOWN:
+		trackball.MouseMove(Vector3D(x, y))
+
+	trackball.mvMatrix[2][3] -= 2.0
+	glUniformMatrix4fv(mvMatrixId, 1, True, trackball.mvMatrix)
+	trackball.mvMatrix[2][3] += 2.0
+	glutPostRedisplay()
+
 glutInit(sys.argv)
 glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH)
 glutInitWindowSize(640, 480)
@@ -214,4 +232,6 @@ glutDisplayFunc(display)
 glutReshapeFunc(reshape)
 glutKeyboardFunc(keyboard)
 glutKeyboardUpFunc(keyboardUp)
+glutMouseFunc(mouseClick)
+glutMotionFunc(mouseMove)
 glutMainLoop()
