@@ -1,5 +1,5 @@
 from MeshLib.Mesh import *
-from math import sqrt, acos, pi
+from math import sqrt, acos, pi, exp
 import numpy
 
 class TrackBall:
@@ -8,6 +8,7 @@ class TrackBall:
 		self.height = height / 2.0
 		self.prevPoint2D = Vector2D()
 		self.prevPoint3D = Vector3D()
+		self.zoomCenter = Vector3D()
 		self.mvMatrix = []
 		for i in range(0, 16):
 			self.mvMatrix.append(1.0 if i%5 == 0 else 0.0)
@@ -28,7 +29,7 @@ class TrackBall:
 			v3d /= v3dLen
 		return v3d
 
-	def MouseMove(self, v2d):
+	def MouseMoveRotate(self, v2d):
 		currentPoint2D = v2d
 		currentPoint3D = self.__mapToSphere(v2d)
 		axis = self.prevPoint3D ^ currentPoint3D
@@ -38,10 +39,17 @@ class TrackBall:
 		self.__rotate(axis, 2.0 * angle)
 		self.prevPoint2D = currentPoint2D
 		self.prevPoint3D = currentPoint3D
+	
+	def MouseMoveScale(self, v2d):
+		currentPoint2D = v2d
+		scaleFactor = exp(-(currentPoint2D - self.prevPoint2D).y/100.0)
+		self.__scale(scaleFactor)
+		self.prevPoint2D = currentPoint2D
 
-	def MousePress(self, v2d):
+	def MousePress(self, v2d, v3d = Vector3D()):
 		self.prevPoint2D = v2d
 		self.prevPoint3D = self.__mapToSphere(v2d)
+		self.zoomCenter = v3d
 	
 	def __rotate(self, axis, angle):
 		shift = Vector3D()
@@ -54,7 +62,12 @@ class TrackBall:
 			self.mvMatrix[i][3] = shift[i]
 
 	def __scale(self, scaleFactor):
-		pass
+		for i in range(0, 3):
+			self.mvMatrix[i][3] -= self.zoomCenter[i]
+		scaleM = self.__constructScaleMatrix(scaleFactor)
+		self.mvMatrix = numpy.dot(scaleM, self.mvMatrix)
+		for i in range(0, 3):
+			self.mvMatrix[i][3] += self.zoomCenter[i]
 
 	def __constructRotateMatrix(self, axis, angle):
 		c = cos(angle); s = sin(angle)
