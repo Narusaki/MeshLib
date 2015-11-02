@@ -215,13 +215,14 @@ def mouseClick(button, state, x, y):
 	mouseState = state
 	if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
 		trackball.MousePress(Vector2D(x, y))
-	elif mouseButton == GLUT_RIGHT_BUTTON and mouseState == GLUT_DOWN:
+	elif (mouseButton == GLUT_RIGHT_BUTTON or mouseButton == GLUT_MIDDLE_BUTTON) and mouseState == GLUT_DOWN:
 		viewport = numpy.array([1, 1, 1, 1], dtype=numpy.int32)
 		glGetIntegerv(GL_VIEWPORT, viewport)
 		z = numpy.array([1], dtype=numpy.float32)
 		glReadPixels(x, viewport[3] - y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, z)
+		if z == 1.0: mouseButton = -1; return
 		mvMatrix = [1.0 if i % 5 == 0 else 0.0 for i in range(0, 16)]
-		mvMatrix[14] = -2.0
+		if mouseButton == GLUT_RIGHT_BUTTON: mvMatrix[14] = -2.0
 		objCoord = gluUnProject(x, viewport[3] - y, z[0], \
 				# numpy.reshape(numpy.transpose(numpy.dot(trackball.mvMatrix, numpy.transpose(numpy.reshape(scaleMatrices[selectedObjId], (4, 4))))), (1, 16)), \
 				numpy.array(mvMatrix), \
@@ -229,20 +230,17 @@ def mouseClick(button, state, x, y):
 				viewport)
 		trackball.MousePress(Vector2D(x, y), Vector3D(objCoord[0], objCoord[1], objCoord[2]))
 
-	trackball.mvMatrix[2][3] -= 2.0
-	glUniformMatrix4fv(mvMatrixId, 1, True, trackball.mvMatrix)
-	trackball.mvMatrix[2][3] += 2.0
-	glutPostRedisplay()
-
 def mouseMove(x, y):
 	global mvMatrixId
 	global viewport
 	global scaleMatrices
 	if mouseButton == GLUT_LEFT_BUTTON and mouseState == GLUT_DOWN:
-		trackball.MouseMoveRotate(Vector3D(x, y))
+		trackball.MouseMoveRotate(Vector2D(x, y))
 	elif mouseButton == GLUT_RIGHT_BUTTON and mouseState == GLUT_DOWN:
 		# gl_Position = projMatrix * mvMatrix * scaleMatrix * vec4(position, 1);
 		trackball.MouseMoveScale(Vector2D(x, y))
+	elif mouseButton == GLUT_MIDDLE_BUTTON and mouseState == GLUT_DOWN:
+		trackball.MouseMoveTranslate(Vector2D(x, y))
 
 	trackball.mvMatrix[2][3] -= 2.0
 	glUniformMatrix4fv(mvMatrixId, 1, True, trackball.mvMatrix)

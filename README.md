@@ -8,3 +8,6 @@ Supported format:
 * .off
 * .m (Hugues Hoppe's format)
 * .ply
+
+## A Mesh-Viewer toolkit
+A Mesh-Viewer toolkit (GLutils/GLWindowShader.py) is presented to show the loaded mesh. It's implemented by PyOpenGL using GLSL.

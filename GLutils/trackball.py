@@ -1,5 +1,5 @@
 from MeshLib.Mesh import *
-from math import sqrt, acos, pi, exp
+from math import sqrt, acos, pi, exp, tan
 import numpy
 
 class TrackBall:
@@ -46,6 +46,13 @@ class TrackBall:
 		self.__scale(scaleFactor)
 		self.prevPoint2D = currentPoint2D
 
+	def MouseMoveTranslate(self, v2d):
+		currentPoint2D = v2d
+		shift2D = (self.zoomCenter.z) * (currentPoint2D - self.prevPoint2D) * tan(45.0 / 180.0 * pi / 2.0) / self.height
+		shift2D.y = -shift2D.y
+		self.__translate(Vector3D(-shift2D.x, -shift2D.y, 0.0))
+		self.prevPoint2D = currentPoint2D
+
 	def MousePress(self, v2d, v3d = Vector3D()):
 		self.prevPoint2D = v2d
 		self.prevPoint3D = self.__mapToSphere(v2d)
@@ -68,6 +75,10 @@ class TrackBall:
 		self.mvMatrix = numpy.dot(scaleM, self.mvMatrix)
 		for i in range(0, 3):
 			self.mvMatrix[i][3] += self.zoomCenter[i]
+	
+	def __translate(self, shift):
+		for i in range(0, 3):
+			self.mvMatrix[i][3] += shift[i]
 
 	def __constructRotateMatrix(self, axis, angle):
 		c = cos(angle); s = sin(angle)
