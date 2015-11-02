@@ -26,13 +26,14 @@ OpenGL.ERROR_CHECKING = False
 # some global variables
 dkey = False
 showWire = True
+selectedObjId = -1
 
 program = None
 vertArrayObjs = []
 vertBufObjs = []
 faceBufObjs = []
 scaleMatrices = []
-positionId = -1; scaleMatrixId = -1; mvMatrixId = -1; projMatrixId = -1
+positionId = -1; scaleMatrixId = -1; mvMatrixId = -1; projMatrixId = -1; colorId = -1
 DEPTHEPS = 0.0001
 
 
@@ -52,9 +53,12 @@ void main()
 
 fragShaderContent = '''
 #version 430 core
+
+uniform vec3 color;
+
 void main()
 {
-	gl_FragColor = vec4(0, 1, 0, 1);
+	gl_FragColor = vec4(color, 1);
 }
 '''
 
@@ -83,19 +87,22 @@ def constructScaleMatrix(model):
 	return m
 
 def initGL():
-	global vertArrayObjs
-	global vertBufObjs
-	global positionId
-	global scaleMatrixId
-	global mvMatrixId
-	global projMatrixId
+	global vertArrayObjs, vertBufObjs
+	global positionId, scaleMatrixId, mvMatrixId, projMatrixId, colorId
 	global program
+	global selectedObjId
 	# compile shaders and program
 	VERTEX_SHADER = shaders.compileShader(vertShaderContent, GL_VERTEX_SHADER)
 	FRAGMENT_SHADER = shaders.compileShader(fragShaderContent, GL_FRAGMENT_SHADER)
 	program = shaders.compileProgram(VERTEX_SHADER, FRAGMENT_SHADER)
 	shaders.glUseProgram(program)
 	
+	positionId = glGetAttribLocation(program, 'position')
+	scaleMatrixId = glGetUniformLocation(program, 'scaleMatrix')
+	mvMatrixId = glGetUniformLocation(program, 'mvMatrix')
+	projMatrixId = glGetUniformLocation(program, 'projMatrix')
+	colorId = glGetUniformLocation(program, 'color')
+
 	# vao
 	for obj in objList:
 		# construct arrays
@@ -122,18 +129,13 @@ def initGL():
 		# send data to server
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faceBufObj)
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, len(faces)*4, faces, GL_STATIC_DRAW)
+		# assign data layout
+		glVertexAttribPointer(positionId, 3, GL_FLOAT, False, 0, ctypes.c_void_p(0))
+		glEnableVertexAttribArray(positionId)
 		# scale matrices
 		scaleMatrices.append(numpy.array(constructScaleMatrix(obj), dtype=numpy.float32))
 
-	positionId = glGetAttribLocation(program, 'position')
-	scaleMatrixId = glGetUniformLocation(program, 'scaleMatrix')
-	mvMatrixId = glGetUniformLocation(program, 'mvMatrix')
-	projMatrixId = glGetUniformLocation(program, 'projMatrix')
-
-	# assign data layout
-	glVertexAttribPointer(positionId, 3, GL_FLOAT, False, 0, ctypes.c_void_p(0))
-	glEnableVertexAttribArray(positionId)
-
+	# shift along minus-z direction for 2 units
 	identity = []
 	for i in range(0, 16):
 		identity.append(1.0 if i%5 == 0 else 0.0)
@@ -142,6 +144,9 @@ def initGL():
 	glUniformMatrix4fv(mvMatrixId, 1, False, identity)
 	
 	# glEnableClientState(GL_VERTEX_ARRAY)
+
+	selectedObjId = 0
+	glUniformMatrix4fv(scaleMatrixId, 1, False, scaleMatrices[selectedObjId])
 
 	glClearColor(1.0, 1.0, 1.0, 1.0)
 	glShadeModel(GL_SMOOTH)
@@ -153,13 +158,24 @@ def display():
 	global program
 	global vertArrayObjs
 	global scaleMatrixId
-	global scaleMatrices
+	global colorId
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 	glUseProgram(program)
-	glUniformMatrix4fv(scaleMatrixId, 1, False, scaleMatrices[0])
-	glBindVertexArray(vertArrayObjs[0])
-	glDrawElements(GL_TRIANGLES, len(objList[0].faces)*3, GL_UNSIGNED_INT, ctypes.c_void_p(0))
+
+	glBindVertexArray(vertArrayObjs[selectedObjId])
+
+	glUniform3f(colorId, 1.0, 0.0, 0.0)
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+	glDepthRange(DEPTHEPS, 1.0)
+	glDrawElements(GL_TRIANGLES, len(objList[selectedObjId].faces)*3, GL_UNSIGNED_INT, ctypes.c_void_p(0))
+
+	if showWire:
+		glUniform3f(colorId, 0.0, 0.0, 0.0)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+		glDepthRange(0.0, 1.0 - DEPTHEPS)
+		glDrawElements(GL_TRIANGLES, len(objList[selectedObjId].faces)*3, GL_UNSIGNED_INT, ctypes.c_void_p(0))
+
 	glutSwapBuffers()
 
 def reshape(width, height):
@@ -168,10 +184,24 @@ def reshape(width, height):
 	glUniformMatrix4fv(projMatrixId, 1, False, constructPerspectiveMatrix(45.0, width/height, 0.1, 1000.0))
 
 def keyboard(key, x, y):
-	pass
+	global selectedObjId
+	global dkey
+	global showWire
+	if key == b'1':
+		selectedObjId = 0
+	elif key == b'2':
+		selectedObjId = 1
+	elif key == b'd':
+		if not dkey: 
+			dkey = True
+			showWire = not showWire
+	glUniformMatrix4fv(scaleMatrixId, 1, False, scaleMatrices[selectedObjId])
+	glutPostRedisplay()
 
 def keyboardUp(key, x, y):
-	pass
+	global dkey
+	if key == b'd':
+		dkey = False
 
 glutInit(sys.argv)
 glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH)
