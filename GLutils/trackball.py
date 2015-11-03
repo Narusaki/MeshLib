@@ -3,9 +3,10 @@ from math import sqrt, acos, pi, exp, tan
 import numpy
 
 class TrackBall:
-	def __init__(self, width, height):
+	def __init__(self, width, height, fovy):
 		self.width = width / 2.0
 		self.height = height / 2.0
+		self.fovy = fovy
 		self.prevPoint2D = Vector2D()
 		self.prevPoint3D = Vector3D()
 		self.zoomCenter = Vector3D()
@@ -14,9 +15,10 @@ class TrackBall:
 			self.mvMatrix.append(1.0 if i%5 == 0 else 0.0)
 		self.mvMatrix = numpy.reshape(self.mvMatrix, (4, 4))
 	
-	def Resize(self, width, height):
+	def Resize(self, width, height, fovy):
 		self.width = width / 2.0
 		self.height = height / 2.0
+		self.fovy = fovy
 	
 	def __mapToSphere(self, v2d):
 		v3d = Vector3D()
@@ -48,7 +50,7 @@ class TrackBall:
 
 	def MouseMoveTranslate(self, v2d):
 		currentPoint2D = v2d
-		shift2D = (self.zoomCenter.z) * (currentPoint2D - self.prevPoint2D) * tan(45.0 / 180.0 * pi / 2.0) / self.height
+		shift2D = self.zoomCenter.z * (currentPoint2D - self.prevPoint2D) * tan(self.fovy / 180.0 * pi / 2.0) / self.height
 		shift2D.y = -shift2D.y
 		self.__translate(Vector3D(-shift2D.x, -shift2D.y, 0.0))
 		self.prevPoint2D = currentPoint2D

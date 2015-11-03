@@ -40,32 +40,11 @@ positionId = -1; scaleMatrixId = -1; mvMatrixId = -1; projMatrixId = -1; colorId
 projectMatrix = None
 viewport = None
 DEPTHEPS = 0.0001
-trackball = TrackBall(640, 480)
+trackball = TrackBall(640, 480, 45.0)
 
 # vertex and fragment shader content
-vertShaderContent = '''
-#version 430 core
-
-in vec3 position;
-uniform mat4 scaleMatrix;
-uniform mat4 mvMatrix, projMatrix;
-
-void main()
-{
-	gl_Position = projMatrix * mvMatrix * scaleMatrix * vec4(position, 1);
-}
-'''
-
-fragShaderContent = '''
-#version 430 core
-
-uniform vec3 color;
-
-void main()
-{
-	gl_FragColor = vec4(color, 1);
-}
-'''
+vertShaderContent = open('shader.vert').read()
+fragShaderContent = open('shader.frag').read()
 
 def constructPerspectiveMatrix(fovy, aspect, zNear, zFar):
 	height = tan(fovy / 180.0 * pi / 2.0) * zNear * 2.0
@@ -185,7 +164,7 @@ def reshape(width, height):
 	glViewport(0, 0, width, height)
 	projectMatrix = constructPerspectiveMatrix(45.0, width/height, 0.1, 1000.0)
 	glUniformMatrix4fv(projMatrixId, 1, False, projectMatrix)
-	trackball.Resize(width, height)
+	trackball.Resize(width, height, 45.0)
 
 def keyboard(key, x, y):
 	global selectedObjId
