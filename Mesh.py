@@ -68,7 +68,7 @@ class Mesh:
 		self.center = Vector3D()
 		self.scale = 1.0
 
-	def LoadMesh(self, fileName, rmReduntVerts = False):
+	def LoadMesh(self, fileName, rmReduntVerts = False, constructAdjacency = True):
 		'''
 		Load mesh
 		'''
@@ -83,7 +83,7 @@ class Mesh:
 		elif suffix == '.m':
 			(self.verts, self.faces, self.normals, self.textures) = MeshLib.utils.MMesh.LoadMFile(fileName, rmReduntVerts)
 		# construct adjacency
-		self.__construct()
+		if constructAdjacency: self.__construct()
 		self.__calcNormals()
 		# calculate bounding box
 		vMax = Vector3D(-1e30, -1e30, -1e30)
@@ -202,6 +202,8 @@ class Mesh:
 			f.area = f.normal.normalize()
 		# if no vertex normals, calculate them by average each vertex's adjacent faces' normals
 		if len(self.normals) != 0: return
+		# if adjacency is not built, then cannot calculate vertex normal
+		if len(self.edges) == 0: return
 		for v in self.verts:
 			vNorm = Vector3D()
 			totalArea = 0.0

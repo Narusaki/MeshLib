@@ -19,7 +19,7 @@ if len(sys.argv) < 2:
 objList = []
 for i in range(1, len(sys.argv)):
 	mesh = Mesh()
-	mesh.LoadMesh(sys.argv[i])
+	mesh.LoadMesh(sys.argv[i], False, False)
 	objList.append(mesh)
 
 OpenGL.ERROR_CHECKING = False
