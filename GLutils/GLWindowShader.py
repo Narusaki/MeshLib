@@ -19,7 +19,7 @@ if len(sys.argv) < 2:
 objList = []
 for i in range(1, len(sys.argv)):
 	mesh = Mesh()
-	mesh.LoadMesh(sys.argv[i], False, False)
+	mesh.LoadMesh(sys.argv[i], False, True)
 	objList.append(mesh)
 
 OpenGL.ERROR_CHECKING = False
@@ -28,15 +28,20 @@ OpenGL.ERROR_CHECKING = False
 mouseButton = None
 mouseState = None
 dkey = False
+lkey = False
 showWire = True
+lighting = False
 selectedObjId = -1
 
 program = None
 vertArrayObjs = []
 vertBufObjs = []
 faceBufObjs = []
+normBufObjs = []
 scaleMatrices = []
-positionId = -1; scaleMatrixId = -1; mvMatrixId = -1; projMatrixId = -1; colorId = -1
+vPositionId = -1; vNormal = -1; scaleMatrixId = -1; mvMatrixId = -1; projMatrixId = -1; colorId = -1
+lightingOnId = -1; AmbientId = -1; DiffuseId = -1; SpecularId = -1; LightPositionId = -1; ShininessId = -1; StrengthId = -1
+cAttenuationId = -1; bAttenuationId = -1; aAttenuationId = -1
 projectMatrix = None
 viewport = None
 DEPTHEPS = 0.0001
@@ -71,8 +76,10 @@ def constructScaleMatrix(model):
 	return m
 
 def initGL():
-	global vertArrayObjs, vertBufObjs
-	global positionId, scaleMatrixId, mvMatrixId, projMatrixId, colorId
+	global vertArrayObjs, vertBufObjs, faceBufObjs, normBufObjs
+	global vPositionId, vNormalId, scaleMatrixId, mvMatrixId, projMatrixId, colorId
+	global lightingOnId, AmbientId, DiffuseId, SpecularId, LightPositionId, ShininessId, StrengthId
+	global cAttenuationId, bAttenuationId, aAttenuationId
 	global program
 	global selectedObjId
 	# compile shaders and program
@@ -81,22 +88,46 @@ def initGL():
 	program = shaders.compileProgram(VERTEX_SHADER, FRAGMENT_SHADER)
 	shaders.glUseProgram(program)
 	
-	positionId = glGetAttribLocation(program, 'position')
+	vPositionId = glGetAttribLocation(program, 'vPosition')
+	vNormalId = glGetAttribLocation(program, 'vNormal')
 	scaleMatrixId = glGetUniformLocation(program, 'scaleMatrix')
 	mvMatrixId = glGetUniformLocation(program, 'mvMatrix')
 	projMatrixId = glGetUniformLocation(program, 'projMatrix')
 	colorId = glGetUniformLocation(program, 'color')
+	lightingOnId = glGetUniformLocation(program, 'lightingOn')
+	AmbientId = glGetUniformLocation(program, 'Ambient')
+	DiffuseId = glGetUniformLocation(program, 'Diffuse')
+	SpecularId = glGetUniformLocation(program, 'Specular')
+	LightPositionId = glGetUniformLocation(program, 'LightPosition')
+	ShininessId = glGetUniformLocation(program, 'Shininess')
+	StrengthId = glGetUniformLocation(program, 'Strength')
+	cAttenuationId = glGetUniformLocation(program, 'ConstantAttenuation')
+	bAttenuationId = glGetUniformLocation(program, 'LinearAttenuation')
+	aAttenuationId = glGetUniformLocation(program, 'QuadraticAttenuation')
+
+	glUniform1i(lightingOnId, lighting)
+	glUniform3f(AmbientId, 0.1, 0.1, 0.1)
+	glUniform3f(DiffuseId, 0.7, 0.7, 0.7)
+	glUniform3f(SpecularId, 0.3, 0.3, 0.3)
+	glUniform3f(LightPositionId, 0.0, 0.0, 6.0)
+	glUniform1f(ShininessId, 16.0)
+	glUniform1f(StrengthId, 1.0)
+	glUniform1f(cAttenuationId, 1.0); glUniform1f(bAttenuationId, 5e-4); glUniform1f(aAttenuationId, 5e-4)
+
 
 	# vao
 	for obj in objList:
 		# construct arrays
-		verts = []; faces = []
+		verts = []; faces = []; normals = []
 		for v in obj.verts:
 			verts.append(v[0]); verts.append(v[1]); verts.append(v[2])
 		for f in obj.faces:
 			faces.append(f[0]); faces.append(f[1]); faces.append(f[2])
+		for n in obj.normals:
+			normals.append(n[0]); normals.append(n[1]); normals.append(n[2])
 		verts = numpy.array(verts, dtype=numpy.float32)
 		faces = numpy.array(faces, dtype=numpy.uint32)
+		normals = numpy.array(normals, dtype=numpy.float32)
 		# generate vao
 		vertArrayObj = glGenVertexArrays(1)
 		vertArrayObjs.append(vertArrayObj)
@@ -107,15 +138,27 @@ def initGL():
 		# send data to server
 		glBindBuffer(GL_ARRAY_BUFFER, vertBufObj)
 		glBufferData(GL_ARRAY_BUFFER, len(verts)*4, verts, GL_STATIC_DRAW)
+		# assign data layout
+		glVertexAttribPointer(vPositionId, 3, GL_FLOAT, False, 0, ctypes.c_void_p(0))
+		glEnableVertexAttribArray(vPositionId)
+
 		# bo for faces
 		faceBufObj = glGenBuffers(1)
 		faceBufObjs.append(faceBufObj)
 		# send data to server
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faceBufObj)
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, len(faces)*4, faces, GL_STATIC_DRAW)
+
+		# bo for normals
+		normBufObj = glGenBuffers(1)
+		normBufObjs.append(normBufObj)
+		# send data to server
+		glBindBuffer(GL_ARRAY_BUFFER, normBufObj)
+		glBufferData(GL_ARRAY_BUFFER, len(normals)*4, normals, GL_STATIC_DRAW)
 		# assign data layout
-		glVertexAttribPointer(positionId, 3, GL_FLOAT, False, 0, ctypes.c_void_p(0))
-		glEnableVertexAttribArray(positionId)
+		glVertexAttribPointer(vNormalId, 3, GL_FLOAT, False, 0, ctypes.c_void_p(0))
+		glEnableVertexAttribArray(vNormalId)
+
 		# scale matrices
 		scaleMatrices.append(numpy.array(constructScaleMatrix(obj), dtype=numpy.float32))
 
@@ -168,24 +211,34 @@ def reshape(width, height):
 
 def keyboard(key, x, y):
 	global selectedObjId
-	global dkey
-	global showWire
+	global dkey, lkey
+	global showWire, lighting
 	if key == b'1':
 		selectedObjId = 0
 	elif key == b'2':
 		selectedObjId = 1
+	elif key == b'3':
+		selectedObjId = 2
 	elif key == b'd':
 		if not dkey: 
 			dkey = True
 			showWire = not showWire
-	if selectedObjId > len(sys.argv) - 1: selectedObjId = len(sys.argv) - 1
+	elif key == b'l':
+		if not lkey:
+			lkey = True
+			lighting = not lighting
+	elif key == b'\x1b': sys.exit(0)
+	if selectedObjId > len(sys.argv) - 2: selectedObjId = len(sys.argv) - 2
 	glUniformMatrix4fv(scaleMatrixId, 1, False, scaleMatrices[selectedObjId])
+	glUniform1i(lightingOnId, lighting)
 	glutPostRedisplay()
 
 def keyboardUp(key, x, y):
-	global dkey
+	global dkey, lkey
 	if key == b'd':
 		dkey = False
+	elif key == b'l':
+		lkey = False
 
 def mouseClick(button, state, x, y):
 	global mouseButton, mouseState
@@ -216,7 +269,7 @@ def mouseMove(x, y):
 	if mouseButton == GLUT_LEFT_BUTTON and mouseState == GLUT_DOWN:
 		trackball.MouseMoveRotate(Vector2D(x, y))
 	elif mouseButton == GLUT_RIGHT_BUTTON and mouseState == GLUT_DOWN:
-		# gl_Position = projMatrix * mvMatrix * scaleMatrix * vec4(position, 1);
+		# gl_Position = projMatrix * mvMatrix * scaleMatrix * vec4(vPosition, 1);
 		trackball.MouseMoveScale(Vector2D(x, y))
 	elif mouseButton == GLUT_MIDDLE_BUTTON and mouseState == GLUT_DOWN:
 		trackball.MouseMoveTranslate(Vector2D(x, y))
