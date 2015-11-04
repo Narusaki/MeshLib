@@ -48,8 +48,8 @@ DEPTHEPS = 0.0001
 trackball = TrackBall(640, 480, 45.0)
 
 # vertex and fragment shader content
-vertShaderContent = open('shader.vert').read()
-fragShaderContent = open('shader.frag').read()
+vertShaderContent = open(os.path.dirname(os.path.abspath(sys.argv[0])) + os.sep + 'shader.vert').read()
+fragShaderContent = open(os.path.dirname(os.path.abspath(sys.argv[0])) + os.sep + 'shader.frag').read()
 
 def constructPerspectiveMatrix(fovy, aspect, zNear, zFar):
 	height = tan(fovy / 180.0 * pi / 2.0) * zNear * 2.0
