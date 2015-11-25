@@ -2,6 +2,7 @@
 
 in vec3 position;
 in vec3 normal;
+in vec2 texCoord;
 
 // light parameters
 uniform bool lightingOn;
@@ -17,6 +18,10 @@ uniform vec3 color;
 uniform float ConstantAttenuation;
 uniform float LinearAttenuation; 
 uniform float QuadraticAttenuation;
+
+// texture parameters
+uniform bool textureOn;
+uniform sampler2D tex;
 
 void main()
 {
@@ -35,12 +40,16 @@ void main()
 		if (diffuse == 0.0) specular = 0.0;
 		else specular = pow(specular, Shininess) * Strength;
 	
-		vec3 rgb = min(color * (Ambient + Diffuse * diffuse * attenuation + Specular * specular * attenuation), vec3(1.0));
+		vec3 actualColor = color;
+		if (textureOn) actualColor = vec3(texture(tex, texCoord));
+		vec3 rgb = min(actualColor * (Ambient + Diffuse * diffuse * attenuation + Specular * specular * attenuation), vec3(1.0));
 		
 		gl_FragColor = vec4(rgb, 1.0);
 	}
 	else
 	{
-		gl_FragColor = vec4(color, 1.0);
+		vec3 actualColor = color;
+		if (textureOn) actualColor = vec3(texture(tex, texCoord));
+		gl_FragColor = vec4(actualColor, 1.0);
 	}
 }
