@@ -43,6 +43,8 @@ vPositionId = -1; vNormal = -1; scaleMatrixId = -1; mvMatrixId = -1; projMatrixI
 lightingOnId = -1; AmbientId = -1; DiffuseId = -1; SpecularId = -1; LightPositionId = -1; ShininessId = -1; StrengthId = -1
 cAttenuationId = -1; bAttenuationId = -1; aAttenuationId = -1
 projectMatrix = None
+lightMatrix = None
+lightPosition = None
 viewport = None
 DEPTHEPS = 0.0001
 trackball = TrackBall(640, 480, 45.0)
@@ -82,6 +84,7 @@ def initGL():
 	global cAttenuationId, bAttenuationId, aAttenuationId
 	global program
 	global selectedObjId
+	global lightMatrix, lightPosition
 	# compile shaders and program
 	VERTEX_SHADER = shaders.compileShader(vertShaderContent, GL_VERTEX_SHADER)
 	FRAGMENT_SHADER = shaders.compileShader(fragShaderContent, GL_FRAGMENT_SHADER)
@@ -105,11 +108,14 @@ def initGL():
 	bAttenuationId = glGetUniformLocation(program, 'LinearAttenuation')
 	aAttenuationId = glGetUniformLocation(program, 'QuadraticAttenuation')
 
+	lightMatrix = numpy.reshape([1.0 if i % 5 == 0 else 0.0 for i in range(0, 16)], (4, 4))
+	lightPosition = numpy.reshape([0.0, 0.0, 6.0, 1.0], (4, 1))
+
 	glUniform1i(lightingOnId, lighting)
 	glUniform3f(AmbientId, 0.1, 0.1, 0.1)
 	glUniform3f(DiffuseId, 0.7, 0.7, 0.7)
 	glUniform3f(SpecularId, 0.3, 0.3, 0.3)
-	glUniform3f(LightPositionId, 0.0, 0.0, 6.0)
+	glUniform3f(LightPositionId, lightPosition[0][0], lightPosition[1][0], lightPosition[2][0])
 	glUniform1f(ShininessId, 16.0)
 	glUniform1f(StrengthId, 1.0)
 	glUniform1f(cAttenuationId, 1.0); glUniform1f(bAttenuationId, 5e-4); glUniform1f(aAttenuationId, 5e-4)
@@ -266,11 +272,22 @@ def mouseMove(x, y):
 	global mvMatrixId
 	global viewport
 	global scaleMatrices
+	global LightPositionId, lightMatrix
 	if mouseButton == GLUT_LEFT_BUTTON and mouseState == GLUT_DOWN:
 		trackball.MouseMoveRotate(Vector2D(x, y))
 	elif mouseButton == GLUT_RIGHT_BUTTON and mouseState == GLUT_DOWN:
-		# gl_Position = projMatrix * mvMatrix * scaleMatrix * vec4(vPosition, 1);
+		# scaleFactor = exp(-(Vector2D(x, y) - trackball.prevPoint2D).y/100.0)
+		# scaleCenter = trackball.zoomCenter
 		trackball.MouseMoveScale(Vector2D(x, y))
+		# for i in range(0, 3):
+		# 	lightMatrix[i][3] -= scaleCenter[i]
+		# scaleM = numpy.reshape([scaleFactor if i%5 == 0 else 0.0 for i in range(0, 16)], (4, 4))
+		# scaleM[3][3] = 1.0
+		# lightMatrix = numpy.dot(scaleM, lightMatrix)
+		# for i in range(0, 3):
+		# 	lightMatrix[i][3] += scaleCenter[i]
+		# newLightPosition = numpy.dot(lightMatrix, lightPosition)
+		# glUniform3f(LightPositionId, newLightPosition[0][0], newLightPosition[1][0], newLightPosition[2][0])
 	elif mouseButton == GLUT_MIDDLE_BUTTON and mouseState == GLUT_DOWN:
 		trackball.MouseMoveTranslate(Vector2D(x, y))
 
