@@ -44,7 +44,8 @@ class TrackBall:
 	
 	def MouseMoveScale(self, v2d):
 		currentPoint2D = v2d
-		scaleFactor = exp(-(currentPoint2D - self.prevPoint2D).y/100.0)
+		# scaleFactor = exp(-(currentPoint2D - self.prevPoint2D).y/100.0)
+		scaleFactor = (currentPoint2D.y - self.prevPoint2D.y) / 100.0
 		self.__scale(scaleFactor)
 		self.prevPoint2D = currentPoint2D
 
@@ -71,12 +72,16 @@ class TrackBall:
 			self.mvMatrix[i][3] = shift[i]
 
 	def __scale(self, scaleFactor):
-		for i in range(0, 3):
-			self.mvMatrix[i][3] -= self.zoomCenter[i]
-		scaleM = self.__constructScaleMatrix(scaleFactor)
+		# for i in range(0, 3):
+		# 	self.mvMatrix[i][3] -= self.zoomCenter[i]
+		# scaleM = self.__constructScaleMatrix(scaleFactor)
+		# self.mvMatrix = numpy.dot(scaleM, self.mvMatrix)
+		# for i in range(0, 3):
+		# 	self.mvMatrix[i][3] += self.zoomCenter[i]
+		scaleVector = Vector3D(0.0, 0.0, 2.0) - self.zoomCenter
+		scaleVector.normalize()
+		scaleM = self.__constructShiftMatrix(scaleFactor * scaleVector)
 		self.mvMatrix = numpy.dot(scaleM, self.mvMatrix)
-		for i in range(0, 3):
-			self.mvMatrix[i][3] += self.zoomCenter[i]
 	
 	def __translate(self, shift):
 		for i in range(0, 3):

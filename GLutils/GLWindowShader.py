@@ -195,7 +195,8 @@ def initGL():
 		scaleMatrices.append(numpy.array(constructScaleMatrix(obj), dtype=numpy.float32))
 
 	# generate texture
-	c = Image.open(os.path.dirname(os.path.abspath(sys.argv[0])) + os.sep + '..' + os.sep + 'texture.bmp').convert('RGB')
+	c = Image.open(os.path.dirname(os.path.abspath(sys.argv[0])) + os.sep + '..' + os.sep + 'texture3.jpg').convert('RGB')
+	# c = Image.open(os.path.dirname(os.path.abspath(sys.argv[0])) + os.sep + '..' + os.sep + 'texture.bmp').convert('RGB')
 	textureData = numpy.resize(numpy.array(list(c.getdata()), dtype=numpy.uint8), (1, c.size[0]*c.size[1]*3))
 
 	textureHandle = glGenTextures(1)
@@ -204,8 +205,8 @@ def initGL():
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, c.size[0], c.size[1], 0, GL_RGB, GL_UNSIGNED_BYTE, textureData)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
 
 	# shift along minus-z direction for 2 units
 	trackball.mvMatrix[2][3] -= 2.0
