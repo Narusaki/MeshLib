@@ -25,6 +25,8 @@ def LoadOFFFile(fileName, rmReduntVerts):
 		parts = curLine.split(' ')
 		parts = [p for p in parts if p != '']
 		verts.append(MeshLib.Mesh.Vertex(Vector3D(float(parts[0]), float(parts[1]), float(parts[2]))))
+		if len(parts) == 5:
+			textures.append(Vector2D(float(parts[3]), float(parts[4])))
 
 	# load faces
 	for i in range(0, meshInfo[1]):
@@ -44,7 +46,10 @@ def SaveOFFFile(fileName, verts, faces, normals, textures):
 	output.write('OFF\n')
 	output.write('%d %d 0\n' % (len(verts), len(faces)))
 	for v in verts:
-		output.write('%f %f %f\n' % (v[0], v[1], v[2]))
+		texStr = ''
+		if len(textures) != 0:
+			texStr = ' %f %f' % (textures[verts.index(v)][0], textures[verts.index(v)][1])
+		output.write('%f %f %f\n' % (v[0], v[1], v[2], texStr))
 	for f in faces:
 		line = '%d' % len(f)
 		for fi in f: line += ' ' + str(fi)

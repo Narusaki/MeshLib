@@ -55,7 +55,7 @@ def SaveMFile(fileName, verts, faces, normals, textures):
 	for vi in range(0, len(verts)):
 		texStr = ''
 		if len(textures) != 0:
-			texStr = '{ uv=(%f %f)}' % (textures[verts.index(vi)][0], textures[verts.index(vi)][1])
+			texStr = ' {uv=(%f %f)}' % (textures[vi][0], textures[vi][1])
 
 		output.write('Vertex %d %f %f %f%s\n' % (vi+1, verts[vi][0], verts[vi][1], verts[vi][2], texStr))
 	for fi in range(0, len(faces)):
