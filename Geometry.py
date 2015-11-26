@@ -139,6 +139,7 @@ class Vector3D:
 		return sqrt(self.length2())
 	def normalize(self):
 		vLen = self.length()
+		if vLen == 0.0: return 0.0
 		self.x /= vLen; self.y /= vLen; self.z /= vLen
 		return vLen
 	
