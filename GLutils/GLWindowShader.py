@@ -195,8 +195,8 @@ def initGL():
 		scaleMatrices.append(numpy.array(constructScaleMatrix(obj), dtype=numpy.float32))
 
 	# generate texture
-	c = Image.open(os.path.dirname(os.path.abspath(sys.argv[0])) + os.sep + '..' + os.sep + 'texture3.jpg').convert('RGB')
-	# c = Image.open(os.path.dirname(os.path.abspath(sys.argv[0])) + os.sep + '..' + os.sep + 'texture.bmp').convert('RGB')
+	# c = Image.open(os.path.dirname(os.path.abspath(sys.argv[0])) + os.sep + '..' + os.sep + 'texture3.jpg').convert('RGB')
+	c = Image.open(os.path.dirname(os.path.abspath(sys.argv[0])) + os.sep + '..' + os.sep + 'texture.bmp').convert('RGB')
 	textureData = numpy.resize(numpy.array(list(c.getdata()), dtype=numpy.uint8), (1, c.size[0]*c.size[1]*3))
 
 	textureHandle = glGenTextures(1)
