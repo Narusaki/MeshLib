@@ -49,7 +49,7 @@ def SaveOFFFile(fileName, verts, faces, normals, textures):
 		texStr = ''
 		if len(textures) != 0:
 			texStr = ' %f %f' % (textures[verts.index(v)][0], textures[verts.index(v)][1])
-		output.write('%f %f %f\n' % (v[0], v[1], v[2], texStr))
+		output.write('%f %f %f%s\n' % (v[0], v[1], v[2], texStr))
 	for f in faces:
 		line = '%d' % len(f)
 		for fi in f: line += ' ' + str(fi)
