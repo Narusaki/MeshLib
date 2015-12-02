@@ -151,36 +151,47 @@ class Mesh:
 			vi += 1
 			# isolated vertex, skip
 			if len(vertex.edges) == 0: continue
-			boundaryStart = -1
+
+			# move a boundary edge (if exist) to front
+			boundaryEdgeIdx = -1
+			for i in range(0, len(vertex.edges)):
+				if self.edges[vertex.edges[i]].faces[0] == -1 or \
+				self.edges[vertex.edges[i]].faces[1] == -1:
+					boundaryEdgeIdx = i
+					break
+			if boundaryEdgeIdx != -1:
+				tmp = vertex.edges[0]
+				vertex.edges[0] = vertex.edges[boundaryEdgeIdx]
+				vertex.edges[boundaryEdgeIdx] = tmp
+
+			# now re-order the vertex's adjacent edges
 			for i in range(0, len(vertex.edges)-1):
 				edgeIndex0 = vertex.edges[i]
 				found = False
-				coFace = -1
+
 				for j in range(i+1, len(vertex.edges)):
 					edgeIndex1 = vertex.edges[j]
-					if self.edges[edgeIndex0].faces[0] == self.edges[edgeIndex1].faces[0] or \
-						self.edges[edgeIndex0].faces[0] == self.edges[edgeIndex1].faces[1] or \
-						self.edges[edgeIndex0].faces[1] == self.edges[edgeIndex1].faces[0] or \
-						self.edges[edgeIndex0].faces[1] == self.edges[edgeIndex1].faces[1]:
-							found = True
-							if self.edges[edgeIndex0].faces[0] == self.edges[edgeIndex1].faces[0]:
-								coFace = self.edges[edgeIndex0].faces[0]
-							elif self.edges[edgeIndex0].faces[0] == self.edges[edgeIndex1].faces[1]:
-								coFace = self.edges[edgeIndex0].faces[0]
-							elif self.edges[edgeIndex0].faces[1] == self.edges[edgeIndex1].faces[0]:
-								coFace = self.edges[edgeIndex0].faces[1]
-							elif self.edges[edgeIndex0].faces[1] == self.edges[edgeIndex1].faces[1]:
-								coFace = self.edges[edgeIndex0].faces[1]
+					f0 = self.edges[edgeIndex0].faces[0]
+					f1 = self.edges[edgeIndex0].faces[1]
+					f2 = self.edges[edgeIndex1].faces[0]
+					f3 = self.edges[edgeIndex1].faces[1]
+					if f0 == f2 and f0 != -1 or f0 == f3 and f0 != -1 or\
+					f1 == f2 and f0 != -1 or f1 == f3 and f0 != -1:
+						found = True
+						break
+				if found: 
+					# swap
+					tmp = vertex.edges[i+1]; vertex.edges[i+1] = vertex.edges[j]; vertex.edges[j] = tmp
+				else:
+					# find the next boundary edge in the remaining edges
+					for j in range(i+1, len(vertex.edges)):
+						if self.edges[vertex.edges[j]].faces[0] == -1 or \
+						self.edges[vertex.edges[j]].faces[1] == -1:
+							tmp = vertex.edges[i+1]
+							vertex.edges[i+1] = vertex.edges[j]
+							vertex.edges[j] = tmp
 							break
-				if not found: print('Error occurs while re-order edges around a vertex!'); return
-				# swap
-				tmp = vertex.edges[i+1]; vertex.edges[i+1] = vertex.edges[j]; vertex.edges[j] = tmp
 
-				if coFace == -1:
-					boundaryStart = i+1
-			# if is boundary vertex, shift edges to start from boundary edges
-			if boundaryStart != -1:
-				vertex.edges = vertex.edges[boundaryStart:] + vertex.edges[:boundaryStart]
 			# set idxAtVert list
 			for j in range(0, len(vertex.edges)):
 				idx = 0 if self.edges[vertex.edges[j]][0] == vi else 1
@@ -211,7 +222,7 @@ class Mesh:
 				e0 = v.edges[i]
 				e1 = v.edges[(i+1)%len(v.edges)]
 				fi = self.__edgeCoFace(e0, e1)
-				assert fi != -1 or i == len(v.edges) - 1
+				if fi == -1: continue
 				vNorm += self.faces[fi].normal * self.faces[fi].area
 				totalArea += self.faces[fi].area
 			vNorm /= totalArea; vNorm.normalize()
@@ -223,6 +234,14 @@ class Mesh:
 			for j in range(0, 2):
 				if self.edges[e0].faces[i] == self.edges[e1].faces[j]:
 					return self.edges[e0].faces[i]
+		print(self.edges[e0][0], self.edges[e0][1])
+		print(self.edges[e1][0], self.edges[e1][1])
+		print(self.edges[e0].faces)
+		print(self.edges[e1].faces)
+		print(e0, e1)
+		for e in self.verts[124826].edges:
+			print(e, self.edges[e].verts, self.edges[e].faces)
+
 		assert False, 'edge %d and %d does not have common face.' % (e0, e1)
 
 
