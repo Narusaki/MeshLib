@@ -21,24 +21,25 @@ def LoadOBJFile(fileName, rmReduntVerts):
 				realIndex.append(len(verts))
 				reduntLabels.append(False)
 
-			parts = curLine.split(' ')
+			parts = curLine.split()
 			parts = [p for p in parts if p != '']
 			verts.append(MeshLib.Mesh.Vertex(Vector3D(float(parts[1]), float(parts[2]), float(parts[3]))))
 		elif curLine[:3] == 'vn ':
-			parts = curLine.split(' ')
+			parts = curLine.split()
 			parts = [p for p in parts if p != '']
 			normals.append(Vector3D(float(parts[1]), float(parts[2]), float(parts[3])))
 		elif curLine[:3] == 'vt ':
-			parts = curLine.split(' ')
+			parts = curLine.split()
 			parts = [p for p in parts if p != '']
 			textures.append(Vector2D(float(parts[1]), float(parts[2])))
 		elif curLine[:2] == 'f ':
-			parts = curLine.split(' ')
+			parts = curLine.split()
 			parts = [p for p in parts if p != '']
 			del parts[0]
 			vertList = [int(p.split('/')[0])-1 for p in parts]
 			if rmReduntVerts:
 				vertList = [realIndex[v] for v in vertList]
+			if vertList[0] == vertList[1] or vertList[0] == vertList[2] or vertList[1] == vertList[2]: continue
 			faces.append(MeshLib.Mesh.Face(vertList))
 	# select normals and textures -- here assume that the normals and textures have exact the same size as vertices
 	normals_ = []; textures_ = []
