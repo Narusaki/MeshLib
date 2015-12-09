@@ -155,6 +155,16 @@ class Vector3D:
 		elif key == 1: self.y = float(value)
 		elif key == 2: self.z = float(value)
 
+def Shift(verts, v):
+	'''
+	Shift a group of vertices
+	'''
+	newVerts = verts[:]
+	for i in range(0, len(newVerts)):
+		for j in range(0, 3):
+			newVerts[i][j] += v[j]
+	return newVerts
+
 def Rotate(verts, ax, ay, az, angle):
 	'''
 	Rotate a group of the vertices
