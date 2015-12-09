@@ -5,7 +5,7 @@ def LoadOBJFile(fileName, rmReduntVerts):
 	'''
 	Load a .obj file, return vertices, faces, normals and textures
 	'''
-	verts = []; faces = [];	normals = []; textures = []
+	verts = []; faces = [];	normals = []; textures = []; lines = []
 	reduntLabels = []
 	vert2index = dict()
 	realIndex = []
@@ -41,6 +41,14 @@ def LoadOBJFile(fileName, rmReduntVerts):
 				vertList = [realIndex[v] for v in vertList]
 			if vertList[0] == vertList[1] or vertList[0] == vertList[2] or vertList[1] == vertList[2]: continue
 			faces.append(MeshLib.Mesh.Face(vertList))
+		elif curLine[:2] == 'l ':
+			parts = curLine.split()
+			parts = [p for p in parts if p != '']
+			del parts[0]
+			vertList = [int(p)-1 for p in parts]
+			if rmReduntVerts:
+				vertList = [realIndex[v] for v in vertList]
+			lines.append(vertList)
 	# select normals and textures -- here assume that the normals and textures have exact the same size as vertices
 	normals_ = []; textures_ = []
 	if rmReduntVerts:
@@ -51,7 +59,7 @@ def LoadOBJFile(fileName, rmReduntVerts):
 	else:
 		normals_ = normals
 		textures_ = textures
-	return (verts, faces, normals_, textures_)
+	return (verts, faces, normals_, textures_, lines)
 
 def SaveOBJFile(fileName, verts, faces, normals, textures):
 	'''

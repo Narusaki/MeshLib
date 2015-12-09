@@ -10,7 +10,7 @@ def LoadPLYFile(fileName, rmReduntVerts):
 	3. Only accept list format of face's representation
 	4. Vertex info must before face info
 	'''
-	verts = []; faces = [];	normals = []; textures = []
+	verts = []; faces = [];	normals = []; textures = []; lines = []
 	typeMaps = {'char':int, 'uchar':int, 'short':int, 'ushort':int, 'int':int, 'uint':int, 'float':float, 'double':float}
 	vertType = []; faceType = []
 	vertPos = [-1, -1, -1]; 
@@ -69,7 +69,7 @@ def LoadPLYFile(fileName, rmReduntVerts):
 		faces.append(MeshLib.Mesh.Face(vertList))
 
 	file.close()
-	return (verts, faces, normals, textures)
+	return (verts, faces, normals, textures, lines)
 
 
 def SavePLYFile(fileName, verts, faces, normals, textures):

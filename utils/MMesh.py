@@ -7,7 +7,7 @@ def LoadMFile(fileName, rmReduntVerts):
 	Load a .m file, return vertices, faces, normals and textures.
 	Right now only vertices and faces can be loaded.
 	'''
-	verts = []; faces = [];	normals = []; textures = []
+	verts = []; faces = [];	normals = []; textures = []; lines = []
 	vert2index = dict()
 	vertMap = dict()
 	realIndex = []
@@ -45,7 +45,7 @@ def LoadMFile(fileName, rmReduntVerts):
 			vertList = [int(p) for p in parts[2:]]
 			vertList = [vertMap[v] for v in vertList]
 			faces.append(MeshLib.Mesh.Face(vertList))
-	return (verts, faces, normals, textures)
+	return (verts, faces, normals, textures, lines)
 
 def SaveMFile(fileName, verts, faces, normals, textures):
 	'''

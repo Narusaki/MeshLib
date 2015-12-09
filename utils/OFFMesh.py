@@ -8,7 +8,7 @@ def LoadOFFFile(fileName, rmReduntVerts):
 	file = open(fileName)
 	file.readline()
 	meshInfo = [int(i) for i in file.readline().split()]
-	verts = []; faces = []; normals = []; textures = []
+	verts = []; faces = []; normals = []; textures = []; lines = []
 	vert2index = dict()
 	realIndex = []
 
@@ -36,7 +36,7 @@ def LoadOFFFile(fileName, rmReduntVerts):
 		if rmReduntVerts:
 			vertList = [realIndex[v] for v in vertList]
 		faces.append(MeshLib.Mesh.Face(vertList))
-	return (verts, faces, normals, textures)
+	return (verts, faces, normals, textures, lines)
 
 def SaveOFFFile(fileName, verts, faces, normals, textures):
 	'''

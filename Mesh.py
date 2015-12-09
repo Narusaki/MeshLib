@@ -65,6 +65,7 @@ class Mesh:
 		self.edges = []
 		self.normals = []
 		self.textures = []
+		self.lines = []
 		self.center = Vector3D()
 		self.scale = 1.0
 
@@ -75,13 +76,13 @@ class Mesh:
 		self.__init__()
 		suffix = fileName[fileName.rfind('.'):].lower()
 		if suffix == '.obj': 
-			(self.verts, self.faces, self.normals, self.textures) = MeshLib.utils.OBJMesh.LoadOBJFile(fileName, rmReduntVerts)
+			(self.verts, self.faces, self.normals, self.textures, self.lines) = MeshLib.utils.OBJMesh.LoadOBJFile(fileName, rmReduntVerts)
 		elif suffix == '.off': 
-			(self.verts, self.faces, self.normals, self.textures) = MeshLib.utils.OFFMesh.LoadOFFFile(fileName, rmReduntVerts)
+			(self.verts, self.faces, self.normals, self.textures, self.lines) = MeshLib.utils.OFFMesh.LoadOFFFile(fileName, rmReduntVerts)
 		elif suffix == '.ply':
-			(self.verts, self.faces, self.normals, self.textures) = MeshLib.utils.PLYMesh.LoadPLYFile(fileName, rmReduntVerts)
+			(self.verts, self.faces, self.normals, self.textures, self.lines) = MeshLib.utils.PLYMesh.LoadPLYFile(fileName, rmReduntVerts)
 		elif suffix == '.m':
-			(self.verts, self.faces, self.normals, self.textures) = MeshLib.utils.MMesh.LoadMFile(fileName, rmReduntVerts)
+			(self.verts, self.faces, self.normals, self.textures, self.lines) = MeshLib.utils.MMesh.LoadMFile(fileName, rmReduntVerts)
 		# construct adjacency
 		if constructAdjacency: self.__construct()
 		self.__calcNormals()
@@ -225,7 +226,9 @@ class Mesh:
 				if fi == -1: continue
 				vNorm += self.faces[fi].normal * self.faces[fi].area
 				totalArea += self.faces[fi].area
-			vNorm /= totalArea; vNorm.normalize()
+			if totalArea != 0.0:
+				vNorm /= totalArea; 
+				vNorm.normalize()
 			self.normals.append(vNorm)
 
 	# find common face of two edges
