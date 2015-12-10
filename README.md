@@ -10,7 +10,13 @@ Supported format:
 * .ply
 
 ## A Mesh-Viewer toolkit
-A Mesh-Viewer toolkit (GLutils/GLWindowShader.py) is presented to show the loaded mesh. It's implemented by PyOpenGL using GLSL.
+A Mesh-Viewer toolkit (GLutils/GLWindowShader.py) is presented to show the loaded mesh. It's implemented by PyOpenGL using GLSL thus owning high display efficiency.
+
+<div align="center">
+<img src="figures/dragon.png" width="400" align="center"/>
+<br>
+<caption align="bottom">Figure 1. A 6 million faces dragon loaded by the toolkit. Still has interactive responses.</caption>
+</div>
 
 Operations:
 * Left mouse + drag: Roate.
