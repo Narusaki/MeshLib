@@ -24,9 +24,12 @@ def LoadOFFFile(fileName, rmReduntVerts):
 
 		parts = curLine.split(' ')
 		parts = [p for p in parts if p != '']
-		verts.append(MeshLib.Mesh.Vertex(Vector3D(float(parts[0]), float(parts[1]), float(parts[2]))))
+		v = MeshLib.Mesh.Vertex(Vector3D(float(parts[0]), float(parts[1]), float(parts[2])))
 		if len(parts) == 5:
 			textures.append(Vector2D(float(parts[3]), float(parts[4])))
+		elif len(parts) >= 6:
+			v.color = Vector3D(float(parts[3])/255.0, float(parts[4])/255.0, float(parts[5])/255.0)
+		verts.append(v)
 
 	# load faces
 	for i in range(0, meshInfo[1]):

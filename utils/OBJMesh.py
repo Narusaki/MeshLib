@@ -23,7 +23,9 @@ def LoadOBJFile(fileName, rmReduntVerts):
 
 			parts = curLine.split()
 			parts = [p for p in parts if p != '']
-			verts.append(MeshLib.Mesh.Vertex(Vector3D(float(parts[1]), float(parts[2]), float(parts[3]))))
+			v = MeshLib.Mesh.Vertex(Vector3D(float(parts[1]), float(parts[2]), float(parts[3])))
+			v.color = Vector3D(float(parts[4]), float(parts[5]), float(parts[6]))
+			verts.append(v)
 		elif curLine[:3] == 'vn ':
 			parts = curLine.split()
 			parts = [p for p in parts if p != '']

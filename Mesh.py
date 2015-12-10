@@ -14,6 +14,7 @@ class Vertex:
 		self.pos = point
 		self.edges = []
 		self.isBoundary = False
+		self.color = Vector3D(1.0, 1.0, 1.0)
 	
 	def __getitem__(self, key):
 		return self.pos[key]
