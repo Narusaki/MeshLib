@@ -69,6 +69,7 @@ class Mesh:
 		self.lines = []
 		self.center = Vector3D()
 		self.scale = 1.0
+		self.mtllibFile = 'texture.mtl'
 
 	def LoadMesh(self, fileName, rmReduntVerts = False, constructAdjacency = True):
 		'''
@@ -77,7 +78,7 @@ class Mesh:
 		self.__init__()
 		suffix = fileName[fileName.rfind('.'):].lower()
 		if suffix == '.obj': 
-			(self.verts, self.faces, self.normals, self.textures, self.lines) = MeshLib.utils.OBJMesh.LoadOBJFile(fileName, rmReduntVerts)
+			(self.verts, self.faces, self.normals, self.textures, self.lines, self.mtllibFile) = MeshLib.utils.OBJMesh.LoadOBJFile(fileName, rmReduntVerts)
 		elif suffix == '.off': 
 			(self.verts, self.faces, self.normals, self.textures, self.lines) = MeshLib.utils.OFFMesh.LoadOFFFile(fileName, rmReduntVerts)
 		elif suffix == '.ply':
@@ -135,6 +136,9 @@ class Mesh:
 
 				if existEdge != -1:
 					edgeIndex = existEdge
+					assert self.edges[edgeIndex].faces[1] == -1, \
+							'Non-manifold edge found! At least three faces (%d, %d, %d) share a common edge.' % \
+							(self.edges[edgeIndex].faces[0], self.edges[edgeIndex].faces[1], fIndex)
 					self.edges[edgeIndex].faces[1] = fIndex
 				else:
 					edgeIndex = len(self.edges)
@@ -243,9 +247,6 @@ class Mesh:
 		print(self.edges[e0].faces)
 		print(self.edges[e1].faces)
 		print(e0, e1)
-		for e in self.verts[124826].edges:
-			print(e, self.edges[e].verts, self.edges[e].faces)
-
 		assert False, 'edge %d and %d does not have common face.' % (e0, e1)
 
 

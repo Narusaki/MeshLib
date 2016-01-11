@@ -52,6 +52,9 @@ def LoadOBJFile(fileName, rmReduntVerts):
 			if rmReduntVerts:
 				vertList = [realIndex[v] for v in vertList]
 			lines.append(vertList)
+		elif 'mtllib' in curLine:
+			mtllibFile = curLine.split()[-1]
+
 	# select normals and textures -- here assume that the normals and textures have exact the same size as vertices
 	normals_ = []; textures_ = []
 	if rmReduntVerts:
@@ -62,7 +65,7 @@ def LoadOBJFile(fileName, rmReduntVerts):
 	else:
 		normals_ = normals
 		textures_ = textures
-	return (verts, faces, normals_, textures_, lines)
+	return (verts, faces, normals_, textures_, lines, mtllibFile)
 
 def SaveOBJFile(fileName, verts, faces, normals, textures):
 	'''
