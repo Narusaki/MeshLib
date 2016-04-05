@@ -9,6 +9,7 @@ def LoadOBJFile(fileName, rmReduntVerts):
 	reduntLabels = []
 	vert2index = dict()
 	realIndex = []
+	mtllibFile = 'texture.mtl'
 	for curLine in open(fileName):
 		curLine = curLine.rstrip()
 		if curLine[:2] == 'v ':
@@ -67,7 +68,7 @@ def LoadOBJFile(fileName, rmReduntVerts):
 		textures_ = textures
 	return (verts, faces, normals_, textures_, lines, mtllibFile)
 
-def SaveOBJFile(fileName, verts, faces, normals, textures):
+def SaveOBJFile(fileName, verts, faces, lines, normals, textures):
 	'''
 	Save mesh into .obj file
 	'''
@@ -88,4 +89,10 @@ def SaveOBJFile(fileName, verts, faces, normals, textures):
 		else:
 			for fi in f: faceLine += ' ' + (str(fi+1) + '/')*2 + str(fi+1)
 		output.write(faceLine + '\n')
+	for curLine in lines:
+		output.write('l')
+		for l in curLine:
+			output.write(' %d' % (l+1))
+		output.write('\n')
+
 	output.close()

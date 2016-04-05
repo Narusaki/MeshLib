@@ -113,7 +113,7 @@ class Mesh:
 		if nNorm != nTex: print('Warnning: nNorm != nTex')
 	
 		suffix = fileName[fileName.rfind('.'):].lower()
-		if suffix == '.obj': MeshLib.utils.OBJMesh.SaveOBJFile(fileName, self.verts, self.faces, self.normals, self.textures)
+		if suffix == '.obj': MeshLib.utils.OBJMesh.SaveOBJFile(fileName, self.verts, self.faces, self.lines, self.normals, self.textures)
 		elif suffix == '.off': MeshLib.utils.OFFMesh.SaveOFFFile(fileName, self.verts, self.faces, self.normals, self.textures)
 		elif suffix == '.ply': MeshLib.utils.PLYMesh.SavePLYFile(fileName, self.verts, self.faces, self.normals, self.textures)
 		elif suffix == '.m': MeshLib.utils.MMesh.SaveMFile(fileName, self.verts, self.faces, self.normals, self.textures)
