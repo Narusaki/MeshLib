@@ -84,6 +84,7 @@ def constructScaleMatrix(model):
 	return m
 
 def ExtractTextureFileName(mtllibFile):
+	if not os.path.exists(mtllibFile): return None
 	for curLine in open(mtllibFile):
 		if 'map_Kd' not in curLine: continue
 		return curLine.rstrip().split()[-1]
@@ -203,17 +204,20 @@ def initGL():
 	# generate texture
 	# c = Image.open(os.path.dirname(os.path.abspath(sys.argv[0])) + os.sep + '..' + os.sep + 'texture3.jpg').convert('RGB')
 	textureFile = ExtractTextureFileName(objList[0].mtllibFile)
-	c = Image.open(os.path.dirname(os.path.abspath(sys.argv[0])) + os.sep + '..' + os.sep + textureFile).convert('RGB')
-	textureData = numpy.resize(numpy.array(list(c.getdata()), dtype=numpy.uint8), (1, c.size[0]*c.size[1]*3))
+	if textureFile != None:
+		c = Image.open(os.path.dirname(os.path.abspath(sys.argv[0])) + os.sep + '..' + os.sep + textureFile).convert('RGB')
+		textureData = numpy.resize(numpy.array(list(c.getdata()), dtype=numpy.uint8), (1, c.size[0]*c.size[1]*3))
 
-	textureHandle = glGenTextures(1)
-	glBindTexture(GL_TEXTURE_2D, textureHandle)
-	glActiveTexture(GL_TEXTURE0)
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, c.size[0], c.size[1], 0, GL_RGB, GL_UNSIGNED_BYTE, textureData)
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+		textureHandle = glGenTextures(1)
+		glBindTexture(GL_TEXTURE_2D, textureHandle)
+		glActiveTexture(GL_TEXTURE0)
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, c.size[0], c.size[1], 0, GL_RGB, GL_UNSIGNED_BYTE, textureData)
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+	else:
+		textureHandle = 0
 
 	# shift along minus-z direction for 2 units
 	trackball.mvMatrix[2][3] -= 2.0
