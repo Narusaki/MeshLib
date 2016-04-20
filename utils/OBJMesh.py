@@ -81,6 +81,7 @@ def SaveOBJFile(fileName, verts, faces, lines, normals, textures):
 	for vt in textures:
 		output.write('vt %f %f\n' % (vt[0], vt[1]))
 	for f in faces:
+		if not f.valid: continue
 		faceLine = 'f'
 		if nNorm == 0 and nTex == 0:
 			for fi in f: faceLine += ' ' + str(fi+1)

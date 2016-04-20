@@ -33,6 +33,7 @@ class Face:
 		self.edges = list(range(0, 3))
 		self.normal = Vector3D()
 		self.area = 0.0
+		self.valid = True
 
 	def __getitem__(self, key):
 		return self.verts[key]
@@ -53,6 +54,7 @@ class Edge:
 		self.faces = [-1, -1]
 		self.idxAtVert = [-1, -1]
 		self.isBoundary = False
+		self.valid = True
 
 	def __getitem__(self, key):
 		return self.verts[key]
@@ -118,6 +120,37 @@ class Mesh:
 		elif suffix == '.ply': MeshLib.utils.PLYMesh.SavePLYFile(fileName, self.verts, self.faces, self.normals, self.textures)
 		elif suffix == '.m': MeshLib.utils.MMesh.SaveMFile(fileName, self.verts, self.faces, self.normals, self.textures)
 	
+	def RemoveNonManifoldness(self):
+		# statistic how "non-manifold" each face can be
+		faceCited = [0 for i in range(0, len(self.faces))]
+		for e in self.edges:
+			if len(e.faces) < 3: continue
+			for fi in e.faces:
+				faceCited[fi] += 1
+		# looping to erase the current "worst" face each iteration untill no non-mainofld face exists
+		while True:
+			fId = -1; maxCited = -1
+			for i in range(0, len(faceCited)):
+				if faceCited[i] <= maxCited: continue
+				maxCited = faceCited[i]
+				fId = i
+			if maxCited == 0: break
+			# removing face fId
+			print('Removing non-manifold face %d, cited times: %d' % (fId, maxCited))
+			self.faces[fId].valid = False
+			faceCited[fId] = 0
+			for ei in self.faces[fId].edges:
+				newFaces = [f for f in self.edges[ei].faces if f != fId]
+				self.edges[ei].faces = newFaces
+				# if a non-manifold edge becomes a manifold edge
+				if len(newFaces) == 2:
+					for fi in newFaces:
+						assert faceCited[fi] > 0
+						faceCited[fi] -= 1
+				elif len(newFaces) == 0:
+					self.edges[ei].valid = False
+
+
 	# constructing adjacent structure
 	def __construct(self):
 		print('Constructing...')
@@ -135,11 +168,19 @@ class Mesh:
 						break
 
 				if existEdge != -1:
+					# edgeIndex = existEdge
+					# assert self.edges[edgeIndex].faces[1] == -1, \
+					# 		'Non-manifold edge found! At least three faces (%d, %d, %d) share a common edge.' % \
+					# 		(self.edges[edgeIndex].faces[0], self.edges[edgeIndex].faces[1], fIndex)
+					# self.edges[edgeIndex].faces[1] = fIndex
 					edgeIndex = existEdge
-					assert self.edges[edgeIndex].faces[1] == -1, \
-							'Non-manifold edge found! At least three faces (%d, %d, %d) share a common edge.' % \
-							(self.edges[edgeIndex].faces[0], self.edges[edgeIndex].faces[1], fIndex)
-					self.edges[edgeIndex].faces[1] = fIndex
+					if self.edges[edgeIndex].faces[1] != -1:
+						print('Non-manifold edge found! At least three faces (%d, %d, %d) share a common edge.' % \
+							(self.edges[edgeIndex].faces[0], self.edges[edgeIndex].faces[1], fIndex))
+						self.edges[edgeIndex].faces.append(fIndex)
+					else:
+						self.edges[edgeIndex].faces[1] = fIndex
+
 				else:
 					edgeIndex = len(self.edges)
 					curEdge = Edge((v0, v1))
@@ -242,6 +283,7 @@ class Mesh:
 			for j in range(0, 2):
 				if self.edges[e0].faces[i] == self.edges[e1].faces[j]:
 					return self.edges[e0].faces[i]
+		return -1
 		print(self.edges[e0][0], self.edges[e0][1])
 		print(self.edges[e1][0], self.edges[e1][1])
 		print(self.edges[e0].faces)
