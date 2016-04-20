@@ -216,7 +216,7 @@ class Mesh:
 			vec0 = self.verts[f[1]].pos - self.verts[f[0]].pos
 			vec1 = self.verts[f[-1]].pos - self.verts[f[0]].pos
 			f.normal = vec0 ^ vec1
-			f.area = f.normal.normalize()
+			f.area = f.normal.normalize() / 2.0
 		# if no vertex normals, calculate them by average each vertex's adjacent faces' normals
 		if len(self.normals) != 0: return
 		# if adjacency is not built, then cannot calculate vertex normal
