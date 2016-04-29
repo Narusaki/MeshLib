@@ -42,7 +42,7 @@ def LoadMFile(fileName, rmReduntVerts):
 						pass
 
 		elif parts[0] == 'Face':
-			vertList = [int(p) for p in parts[2:]]
+			vertList = [int(p) for p in parts[2:5]]
 			vertList = [vertMap[v] for v in vertList]
 			faces.append(MeshLib.Mesh.Face(vertList))
 	return (verts, faces, normals, textures, lines)
